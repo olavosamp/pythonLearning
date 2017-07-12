@@ -25,8 +25,11 @@ class Dataset:
 		self.targetIndex = numpy.in1d(self.Y,self.targetClasses) # Indexes of I/O pairs belonging to target classes
 		self.targetLabels = self.X[:,self.targetIndex]			  # Input elements belonging to target classes
 
-		Y_unwrap = numpy.zeros(self.Y.shape)
-		Y_unwrap[:,self.targetIndex] = 1
+		Y_unwrap = numpy.zeros((2, self.Y.shape[1]))
+		Y_unwrap[0,:] = numpy.ones((1, self.Y.shape[1]))
+
+		Y_unwrap[0,self.targetIndex] = 0
+		Y_unwrap[1,self.targetIndex] = 1
 
 		return Y_unwrap
 
