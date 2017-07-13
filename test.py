@@ -1,3 +1,5 @@
+import time
+
 import numpy as numpy
 import numpy.matlib as matlib
 import matplotlib.pyplot as pyplot
@@ -5,7 +7,6 @@ import matplotlib.pyplot as pyplot
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
-
 
 import dataset
 
@@ -28,8 +29,10 @@ print("Y unwrap:", Y_unwrap.shape)
 learningRate = 0.01
 
 trainRatio = 0.6
-testRatio = 0.2
-valRatio = 0.2
+testRatio = 0.4
+valRatio = 0
+
+numEpochs = 500
 
 dataSize = dataSet.dataSize
 
@@ -49,9 +52,9 @@ x_val   = numpy.transpose(X[:,randIndex[testIndex:]])
 # x_test  = X[:,randIndex[trainIndex:testIndex]]
 # x_val   = X[:,randIndex[testIndex:]]
 
-y_train = numpy.transpose(Y[:,randIndex[:trainIndex]])
-y_test  = numpy.transpose(Y[:,randIndex[trainIndex:testIndex]])
-y_val   = numpy.transpose(Y[:,randIndex[testIndex:]])
+y_train = numpy.transpose(Y_unwrap[:,randIndex[:trainIndex]])
+y_test  = numpy.transpose(Y_unwrap[:,randIndex[trainIndex:testIndex]])
+y_val   = numpy.transpose(Y_unwrap[:,randIndex[testIndex:]])
 
 
 print("x train:, ", x_train.shape)
@@ -71,8 +74,19 @@ model.add(Activation('softmax'))
 sgd = SGD(lr=learningRate, momentum=0.9, nesterov=True)
 model.compile(loss="categorical_crossentropy", optimizer=sgd, metrics=['accuracy'])
 
-model.fit(x_train, y_train, epochs=5, batch_size=10)
+timerStart = time.time()
+model.fit(x_train, y_train, epochs=numEpochs, batch_size=10)
+timerEnd = time.time()
+
+eta = timerEnd-timerStart
 
 metrics = model.evaluate(x_test, y_test, batch_size=20)
 
-print("Metrics: ", metrics)
+print('\n')
+print(model.summary())
+
+print('\n')
+print("Elapsed time: ", eta)
+print("Elapsed time per epoch: ", eta/numEpochs)
+print("Loss: ", metrics[0])
+print("Accuracy: ", metrics[1])

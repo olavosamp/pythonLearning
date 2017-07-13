@@ -11,15 +11,15 @@ class Dataset:
 		self.variance = variance
 		self.dataSize = clusterSize*numClasses
 		
+	# Generate random data
 	def generate(self):
-		# Generate random data
 		self.T = numpy.random.randn(self.dim, self.numClasses) # Cluster centers
 		self.X = matlib.repmat(self.T, 1, self.clusterSize) + self.variance*numpy.random.randn(self.dim, self.dataSize)
 		self.Y = matlib.repmat(range(self.numClasses),1,self.clusterSize)
 		return self.X, self.Y, self.T
 		
+	# Unwrap labels
 	def unwrap(self):
-		# Unwrap labels
 		self.targetClasses = numpy.random.permutation(numpy.arange(self.numClasses))[:numpy.floor(self.numClasses/2).astype(int)]	# K/2 array of target classes
 
 		self.targetIndex = numpy.in1d(self.Y,self.targetClasses) # Indexes of I/O pairs belonging to target classes
@@ -31,10 +31,12 @@ class Dataset:
 		Y_unwrap[0,self.targetIndex] = 0
 		Y_unwrap[1,self.targetIndex] = 1
 
+		self.Y_unwrap = Y_unwrap
+
 		return Y_unwrap
 
+	# Plot the data
 	def plotData(self):
-		# Plot the data
 		X = self.X
 		Y = self.X
 		T = self.T
@@ -48,4 +50,4 @@ class Dataset:
 
 		pyplot.plot(targetLabels[0,:], targetLabels[1,:], 'r+')
 		pyplot.plot(T[0,targetClasses], T[1,targetClasses], 'kx', markersize=13, markeredgewidth=2)
-		return
+		return 0
