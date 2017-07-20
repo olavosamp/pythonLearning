@@ -23,7 +23,7 @@ class Dataset:
 		self.targetClasses = numpy.random.permutation(numpy.arange(self.numClasses))[:numpy.floor(self.numClasses/2).astype(int)]	# K/2 array of target classes
 
 		self.targetIndex = numpy.in1d(self.Y,self.targetClasses) # Indexes of I/O pairs belonging to target classes
-		self.targetLabels = self.X[:,self.targetIndex]			  # Input elements belonging to target classes
+		self.targetLabels = self.X[:,self.targetIndex]			 # Input elements belonging to target classes
 
 		Y_unwrap = numpy.zeros((2, self.Y.shape[1]))
 		Y_unwrap[0,:] = numpy.ones((1, self.Y.shape[1]))
@@ -32,7 +32,7 @@ class Dataset:
 		Y_unwrap[1,self.targetIndex] = 1
 
 		self.Y_unwrap = Y_unwrap
-
+		
 		return Y_unwrap
 
 	# Plot the data
