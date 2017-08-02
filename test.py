@@ -26,7 +26,7 @@ X, Y, T = dataSet.generate()
 print(dataSet.X.shape)
 
 Y_unwrap = dataSet.unwrap()
-print("Y unwrap:", Y_unwrap.shape)
+#print("Y unwrap:", Y_unwrap.shape)
 #dataSet.plotData()
 
 ## Configure Network
@@ -59,10 +59,10 @@ y_train = numpy.transpose(Y_unwrap[:,randIndex[:trainIndex]])
 y_test  = numpy.transpose(Y_unwrap[:,randIndex[trainIndex:testIndex]])
 y_val   = numpy.transpose(Y_unwrap[:,randIndex[testIndex:]])
 
-print("x train:, ", x_train.shape)
-print("x test:, ", x_test.shape)
-print("y train:, ", y_train.shape)
-print("y test:, ", y_test.shape)
+# print("x train:, ", x_train.shape)
+# print("x test:, ", x_test.shape)
+# print("y train:, ", y_train.shape)
+# print("y test:, ", y_test.shape)
 
 # Network architecture
 model.add(Dense(units=10, input_dim=dataSet.dim))	# Input and one hidden layer
@@ -98,7 +98,7 @@ y_pred[:, 1] = numpy.where(y_pred[:, 1] >= 0.5, 1, 0)	# Positives
 
 y_pred = y_pred.astype(bool)
 
-print("\ny_pred shape: ", y_pred.shape)
+# print("\ny_pred shape: ", y_pred.shape)
 
 # Plot results
 
