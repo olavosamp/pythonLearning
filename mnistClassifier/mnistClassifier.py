@@ -15,23 +15,46 @@ from keras.datasets 	import mnist
 # Import MNIST database from Keras
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-print("first value sum :", x_train[0].sum())
-print("y_train: ", y_train[0:10])
+x = np.concatenate((x_train, x_test))
+y = np.concatenate((y_train, y_test))
 
-testSize = x_test.shape[0] # temporary
+imgSizes = x[0].shape 		# Original image sizes
+inputDim = x[0].size 		# Input dimension
+m = x.shape[0]				# Dataset size
+K = 10						# Number of classes = 10 for MNIST
 
-x_val = x_test[0:np.floor(testSize/2).astype(int)]
-y_val = y_test[0:np.floor(testSize/2).astype(int)]
+# Unwrap input and labels
+x = np.reshape(x, (m,inputDim))
+y = utils.to_categorical(y, K)
 
-x_test = x_test[np.floor(testSize/2).astype(int):]
-y_test = y_test[np.floor(testSize/2).astype(int):]
+# Shuffle dataset
+index = np.random.permutation(m)
+x = x[index]
+y = y[index]
 
-m = x_train.shape[0]		# Training data size
-inputDim = x_train[0].size 	# Input dimension
-testSize = x_test.shape[0]	# Test and validation data sizes
-valSize  = x_val.shape[0]
-K = 10						# Number of classes
+#debug
+print("first x value sum :", x[0].sum())
+#debug
 
+# Train, test, validation split
+# [------Train------/-Test-/-Val-]
+trainSplit = 0.7
+testSplit  = (1-trainSplit)/2
+valSplit   = testSplit
+
+trainIndex = np.floor(m*trainSplit).astype(int)
+testIndex  = np.floor(m*testSplit).astype(int) + trainIndex
+
+x_train = x[:trainIndex]
+y_train = y[:trainIndex]
+
+x_test  = x[trainIndex:testIndex]
+y_test  = y[trainIndex:testIndex]
+
+x_val   = x[testIndex:]
+y_val   = y[testIndex:]
+
+# Information about dimensions
 print("")
 print("Number of examples: ", m)
 print("Input dimension: ", inputDim)
@@ -45,28 +68,21 @@ print("Shape y_test: ", y_test.shape)
 
 print("Shape x_val: ", x_val.shape)
 print("Shape y_val: ", y_val.shape)
-
-x_trainUnwrap = np.reshape(x_train, (m,inputDim))
-#y_trainUnwrap = np.ravel(y_train)
-x_testUnwrap  = np.reshape(x_test, (testSize, inputDim))
-#y_testUnwrap  = np.ravel(y_test)
-x_valUnwrap  = np.reshape(x_val, (valSize, inputDim))
-
 print("")
-print("Shape x_trainUnwrap: ", x_trainUnwrap.shape)
-print("Shape x_testUnwrap: ", x_testUnwrap.shape)
-
-# Unwrap labels
-y_trainUnwrap = utils.to_categorical(y_train, K)
-y_testUnwrap = utils.to_categorical(y_test, K)
-y_valUnwrap = utils.to_categorical(y_val, K)
-
 
 ## Network
 model = Sequential()
 
+# Network architecture
+neurons1 = 10
+
+# Network hyperparameters
+learningRate = 0.01
+maxEpochs = 1000
+batchSize = 256
+
 #Input
-model.add(Dense(units=50, input_dim=inputDim))
+model.add(Dense(units=neurons1, input_dim=inputDim))
 model.add(Activation('tanh'))
 
 #model.add(Dense(units=10))
@@ -75,10 +91,6 @@ model.add(Activation('tanh'))
 model.add(Dense(units=10))
 model.add(Activation('softmax'))
 
-# Network hyperparameters
-learningRate = 0.01
-maxEpochs = 1000
-batchSize = 256
 
 # Configure optimizer
 sgd = SGD(lr=learningRate, nesterov=False)
@@ -91,7 +103,7 @@ earlyStop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=6, verbo
 # Train Network
 timerStart = time.time()
 
-hist = model.fit(x_trainUnwrap, y_trainUnwrap, epochs=maxEpochs, batch_size=batchSize, callbacks=[earlyStop] ,validation_data=(x_valUnwrap, y_valUnwrap), verbose=0)
+hist = model.fit(x_train, y_train, epochs=maxEpochs, batch_size=batchSize, callbacks=[earlyStop] ,validation_data=(x_val, y_val), verbose=0)
 numEpochs = len(hist.history['acc'])
 
 timerEnd = time.time()
@@ -99,8 +111,8 @@ timerEnd = time.time()
 eta = timerEnd-timerStart
 
 # Test trained model
-metrics = model.evaluate(x_testUnwrap, y_testUnwrap, batch_size=batchSize)
-y_pred = model.predict(x_testUnwrap, batch_size=batchSize)
+metrics = model.evaluate(x_test, y_test, batch_size=batchSize)
+y_pred = model.predict(x_test, batch_size=batchSize)
 
 # Information
 print('\n')
@@ -113,3 +125,8 @@ print("Elapsed time: ", eta)
 print("Elapsed time per epoch: ", eta/numEpochs)
 print("Loss: ", metrics[0])
 print("Accuracy: ", metrics[1])
+
+# Show predictions
+print("----Predictions----")
+print("\nPrediction :", np.argmax(y_pred[0]))
+pyplot.imshow(np.reshape(x_test[0], (imgSizes)))
