@@ -7,7 +7,7 @@ import matplotlib.pyplot as pyplot
 
 from keras 				import utils
 from keras.models 		import Sequential
-from keras.layers 		import Dense, Activation
+from keras.layers 		import Dense, Activation, Conv2D
 from keras.optimizers 	import SGD
 from keras.callbacks 	import EarlyStopping
 from keras.datasets 	import mnist
@@ -19,12 +19,12 @@ x = np.concatenate((x_train, x_test))
 y = np.concatenate((y_train, y_test))
 
 imgSizes = x[0].shape 		# Original image sizes
-inputDim = x[0].size 		# Input dimension
+inputShape = x[0].shape 	# Input dimension
 m = x.shape[0]				# Dataset size
 K = 10						# Number of classes = 10 for MNIST
 
 # Unwrap input and labels
-x = np.reshape(x, (m,inputDim))
+x = np.reshape(x, (m,inputShape[0], inputShape[1], 3))
 y = utils.to_categorical(y, K)
 
 # Shuffle dataset
@@ -57,7 +57,7 @@ y_val   = y[testIndex:]
 # Information about dimensions
 print("")
 print("Number of examples: ", m)
-print("Input dimension: ", inputDim)
+print("Input shape: ", inputShape)
 
 print("")
 print("Shape x_train: ", x_train.shape)
@@ -74,8 +74,7 @@ print("")
 model = Sequential()
 
 # Network architecture
-neurons1 = 50
-neurons2 = 50
+#
 
 # Network hyperparameters
 learningRate = 0.01
@@ -83,16 +82,14 @@ maxEpochs = 1000
 batchSize = 256
 
 #Input
-model.add(Dense(units=neurons1, input_dim=inputDim))
+model.add(Conv2D(filters=10, kernel_size=4 , data_format="channels_last", input_shape=inputShape))
 model.add(Activation('tanh'))
 
-model.add(Dense(units=neurons2))
-model.add(Activation('tanh'))
+#model.add(Dense(units=10))
 
 # Output
 model.add(Dense(units=10))
 model.add(Activation('softmax'))
-
 
 # Configure optimizer
 sgd = SGD(lr=learningRate, nesterov=False)
@@ -100,7 +97,6 @@ model.compile(loss="categorical_crossentropy", optimizer=sgd, metrics=['accuracy
 
 # Configure callbacks
 earlyStop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=6, verbose=1, mode='auto')
-
 
 # Train Network
 timerStart = time.time()
