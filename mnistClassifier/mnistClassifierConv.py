@@ -19,13 +19,16 @@ x = np.concatenate((x_train, x_test))
 y = np.concatenate((y_train, y_test))
 
 imgSizes = x[0].shape 		# Original image sizes
-inputShape = x[0].shape 	# Input dimension
-m = x.shape[0]				# Dataset size
 K = 10						# Number of classes = 10 for MNIST
 
-# Unwrap input and labels
-x = np.reshape(x, (m,inputShape[0], inputShape[1], 3))
+# Convert input to rgb and unwrap labels
+x = x[:,:,:,np.newaxis]
+x = np.repeat(x, 3, 3)
 y = utils.to_categorical(y, K)
+
+
+inputShape = x[0].shape 	# Input dimension
+m = x.shape[0]				# Dataset size
 
 # Shuffle dataset
 index = np.random.permutation(m)
@@ -38,7 +41,7 @@ print("first x value sum :", x[0].sum())
 
 # Train, test, validation split
 # [------Train------/-Test-/-Val-]
-trainSplit = 0.7
+trainSplit = 0.6
 testSplit  = (1-trainSplit)/2
 valSplit   = testSplit
 
@@ -82,7 +85,7 @@ maxEpochs = 1000
 batchSize = 256
 
 #Input
-model.add(Conv2D(filters=10, kernel_size=4 , data_format="channels_last", input_shape=inputShape))
+model.add(Conv2D(filters=4, kernel_size=4 , data_format="channels_last", input_shape=inputShape))
 model.add(Activation('tanh'))
 
 #model.add(Dense(units=10))
@@ -97,6 +100,8 @@ model.compile(loss="categorical_crossentropy", optimizer=sgd, metrics=['accuracy
 
 # Configure callbacks
 earlyStop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=6, verbose=1, mode='auto')
+
+print(model.summary())
 
 # Train Network
 timerStart = time.time()
@@ -114,8 +119,6 @@ y_pred = model.predict(x_test, batch_size=batchSize)
 
 # Information
 print('\n')
-
-#print(model.summary())
 
 print('\n')
 print("Epochs: ", numEpochs)
