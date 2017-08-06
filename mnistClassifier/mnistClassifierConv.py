@@ -7,7 +7,7 @@ import matplotlib.pyplot as pyplot
 
 from keras 				import utils
 from keras.models 		import Sequential
-from keras.layers 		import Dense, Activation, Conv2D
+from keras.layers 		import Dense, Activation, Conv2D, ZeroPadding2D, MaxPooling2D
 from keras.optimizers 	import SGD
 from keras.callbacks 	import EarlyStopping
 from keras.datasets 	import mnist
@@ -27,13 +27,15 @@ x = np.repeat(x, 3, 3)
 y = utils.to_categorical(y, K)
 
 
-inputShape = x[0].shape 	# Input dimension
 m = x.shape[0]				# Dataset size
 
 # Shuffle dataset
 index = np.random.permutation(m)
 x = x[index]
 y = y[index]
+
+x = x[1000]
+y = y[1000]
 
 #debug
 print("first x value sum :", x[0].sum())
@@ -60,7 +62,7 @@ y_val   = y[testIndex:]
 # Information about dimensions
 print("")
 print("Number of examples: ", m)
-print("Input shape: ", inputShape)
+#print("Input shape: ", inputShape)
 
 print("")
 print("Shape x_train: ", x_train.shape)
@@ -77,6 +79,8 @@ print("")
 model = Sequential()
 
 # Network architecture
+# LeNet-5
+# in-C1-S2-C3-S4-C5-F6-out
 #
 
 # Network hyperparameters
@@ -84,11 +88,33 @@ learningRate = 0.01
 maxEpochs = 1000
 batchSize = 256
 
-#Input
-model.add(Conv2D(filters=4, kernel_size=4 , data_format="channels_last", input_shape=inputShape))
-model.add(Activation('tanh'))
+inputShape = x[:batchSize].shape 	# Input dimension
+print("Input shape: ", inputShape)
 
-#model.add(Dense(units=10))
+#Input
+model.add(ZeroPadding2D(padding=(2,2), input_shape=inputShape))
+
+# C1
+model.add(Conv2D(filters=6, kernel_size=5))
+model.add(Activation('sigmoid'))
+
+# S2
+model.add(MaxPooling2D(pool_size=2, strides=2))
+
+# C3
+model.add(Conv2D(filters=16, kernel_size=5))
+model.add(Activation('sigmoid'))
+
+# S4
+model.add(MaxPooling2D(pool_size=2, strides=2))
+
+# C5
+model.add(Conv2D(filters=120, kernel_size=5))
+model.add(Activation('sigmoid'))
+
+# F6
+model.add(Dense(units=84))
+model.add(Activation('tanh'))
 
 # Output
 model.add(Dense(units=10))
