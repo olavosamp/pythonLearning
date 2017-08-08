@@ -12,9 +12,10 @@ from keras.layers 		import Dense, Activation, Conv2D, ZeroPadding2D, MaxPooling2
 from keras.callbacks 	import EarlyStopping
 from keras.datasets 	import mnist
 
-import dataset as dataset
+import dataset
+import LossHistory
 
-weightsPath = ".\\weights\\" + "leNet5-11"
+weightsPath = ".\\weights\\" + "test"
 
 # # Import MNIST database from Keras
 x, y, imgSize = dataset.loadMnist()
@@ -93,7 +94,7 @@ model = Sequential()
 
 # Hyperparameters
 learningRate = 0.01
-maxEpochs = 300
+maxEpochs = 10
 batchSize = 1024
 
 inputShape = x_train[0].shape 	# Input dimension
@@ -140,7 +141,9 @@ print(model.summary())
 # Train Network
 timerStart = time.time()
 
-hist = model.fit(x_train, y_train, epochs=maxEpochs, batch_size=batchSize, callbacks=[earlyStop] ,validation_data=(x_val, y_val), verbose=1)
+lossHistory = LossHistory.LossHistory()
+hist = model.fit(x_train, y_train, epochs=maxEpochs, batch_size=batchSize, callbacks=[earlyStop, lossHistory] ,validation_data=(x_val, y_val), verbose=1)
+
 numEpochs = len(hist.history['acc'])
 
 timerEnd = time.time()
@@ -164,7 +167,21 @@ print("Elapsed time per epoch: ", eta/numEpochs)
 print("Loss: ", metrics[0])
 print("Accuracy: ", metrics[1])
 
+print("\nTEST - lossHistory: ", lossHistory)
+print("")
+print("\nTEST - lossHistory.losses: ", lossHistory.losses)
+print("\nTEST - lossHistory.losses shape: ", len(lossHistory.losses))
+print("")
+print("\nTEST - lossHistory.losses: ", lossHistory.valLosses)
+print("\nTEST - lossHistory.losses shape: ", len(lossHistory.valLosses))
+print("")
+
 # Show predictions
 print("----Predictions----")
 print("\nPrediction :", np.argmax(y_pred[0]))
 pyplot.imshow(np.reshape(x_test[0], (imgSize)))
+
+print("\nError graph\n")
+pyplot.figure(figsize=(10,10))
+pyplot.plot(range(len(lossHistory.losses)), lossHistory.losses, 'bx')
+pyplot.plot(range(len(lossHistory.valLosses)), lossHistory.valLosses, 'rx')
